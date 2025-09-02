@@ -50,10 +50,48 @@ export const register = async (req, res) => {
   }
 };
 
-export const login = (req, res) => {
-  res.send("User logged in");
+export const login = async (req, res) => {
+  const { email, passWord } = req.body;
+
+  if (!email || !passWord) {
+    return res.status(400).json({ message: "Email and password are required" });
+  }
+
+  try {
+    const user = await User.findOne({ email });
+
+    if (!user || !user.passWord) {
+      return res.status(400).json({ message: "Invalid credentials" });
+    }
+
+    const isCorrect = await bcrypt.compare(passWord, user.passWord);
+
+    if (!isCorrect) {
+      return res.status(400).json({ message: "Invalid credentials" });
+    }
+
+    generateToken(user._id, res);
+
+    res.status(200).json({
+      _id: user._id,
+      fullName: user.fullName,
+      email: user.email,
+      profilePicture: user.profilePicture,
+      message: "User logged in successfully"
+    });
+  } catch (error) {
+    console.log("Error in login controller:", error.message);
+    res.status(500).json({ message: "Server error" });
+  }
 };
 
 export const logout = (req, res) => {
-  res.send("User logged out");
+  try {
+    res.cookie("token", "", { expires: new Date(0) });
+    res.status(200).json({ message: "User logged out successfully" });
+  }
+  catch (error) {
+    console.log("Error in logout controller:", error.message);
+    res.status(500).json({ message: "Server error" });
+  }
 };
