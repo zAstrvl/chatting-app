@@ -125,3 +125,13 @@ export const updateProfile = async (req, res) => {
     res.status(500).json({ message: "Server error" });
   }
 };
+
+export const checkRoute = (req, res) => {
+  try{
+    res.status(200).json({ message: "User is authenticated" });
+  }
+  catch (error) {
+    console.log("Error in check route controller:", error.message);
+    res.status(500).json({ message: "Server error" });
+  }
+};
